@@ -1,11 +1,15 @@
 services:
   pg-vector-postgres:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    image: sha256:d8e8fe0b3789dde0035966b80796afdfa10a8e98d3a338b0920b88472cbd1ba1
     container_name: pg-vector-postgres
-    pull_policy: build
-    hostname: pg-vector-postgres-${RANDOM:-$(date +%s)}
+    pull_policy: never
+    hostname: pg-vector-postgres-default
+    stop_grace_period: 90s
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-pgvector_db}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -21,9 +25,14 @@ services:
     volumes:
       - pg-vector-postgres-data:/var/lib/postgresql/data
     networks:
-      - jelly_wg0
+      jelly_wg0:
+        ipv4_address: 10.66.87.4
+        aliases:
+          - pg-vector-postgres-default
 networks:
   jelly_wg0:
     external: true
 volumes:
-    pg-vector-postgres-data:
+  pg-vector-postgres-data:
+    external: true
+    name: postgres-vector_pg-vector-postgres-data
